@@ -1,7 +1,19 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  reactStrictMode: true,
+  images: {
+    domains: [
+      'images.unsplash.com',
+      'i.ytimg.com',
+      'startup-template-sage.vercel.app',
+      'res.cloudinary.com',
+      'www.youtube.com',
+      'plus.unsplash.com',
+      'i.postimg.cc',
+      'media.istockphoto.com',
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig

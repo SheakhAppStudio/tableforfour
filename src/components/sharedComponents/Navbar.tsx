@@ -1,203 +1,154 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { FaHome, FaUser, FaInfoCircle, FaPhone } from "react-icons/fa";
-import { GiHamburgerMenu } from "react-icons/gi";
-import { motion, AnimatePresence } from "framer-motion";
-import { usePathname, useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
+export default function Navbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const session = useSession()
-  const drawerVariants = {
-    hidden: { x: "100%" },
-    visible: { x: "0%" },
-    exit: { x: "100%" },
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const navLinks = [
-    { href: "/", label: "Home", icon: <FaHome /> },
-    { href: "/products/6865354ffb7a0e3210631255", label: "Product Details 1", icon: <FaInfoCircle /> },
-    { href: "/products/6865359afb7a0e3210631256", label: "Product Details 2", icon: <FaInfoCircle /> },
-    { href: "/cart", label: "Cart", icon: <FaInfoCircle /> },
-    { href: "/checkout", label: "Checkout", icon: <FaInfoCircle /> },
-    { href: "/dashboard/admin/add-product", label: "Add Product", icon: <FaPhone /> },
-  ];
-  if(pathname.includes("/dashboard") || pathname.includes("/signin") || pathname.includes("/signup")){
-    return null; // Hide Navbar on specific pages
-  }
-  else {
-    return (
-    <nav className="bg-table-head-gradient shadow-lg sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
-                <span className="text-secondColor font-bold text-xl">L</span>
-              </div>
-              <span className="text-white font-bold text-xl hidden sm:block">
-                YourLogo
-              </span>
-            </Link>
+if (pathname.includes('/dashboard') || pathname.includes('/signin') || pathname.includes('/signup') || pathname.includes('/forgot-password') 
+  || pathname.includes('/set-password') || pathname.includes('/bookings/restaurants')) {
+return null
+}
+  return (
+    <motion.nav 
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="px-4 sm:px-6 py-5 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-xl z-50 shadow-sm"
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <Link href="/">  <motion.div 
+          whileHover={{ scale: 1.02 }}
+          className="flex items-center "
+          
+        >
+          <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center">
+            <Image src="https://res.cloudinary.com/dc3czyqsb/image/upload/v1754921062/WhatsApp_Image_2025-08-11_at_7.48.20_PM-removebg-preview_pboqww.png" 
+            alt="Table For Four" width={500} height={500}  />
           </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-white hover:text-fifthColor px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 flex items-center gap-2 hover:bg-fourthColor/30 ${
-                    pathname === link.href ? "bg-fourthColor/50" : ""
-                  }`}
-                >
-                  {link.icon}
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Login Button */}
-          {session.status === "authenticated" ? (
-            <div className="hidden md:block">
-              {/* <Link
-                href="/dashboard/admin/add-product"
-                className="bg-white text-textColor hover:bg-sixthColor px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              >
-                <FaUser />
-                Dashboard
-              </Link> */}
-                  <button onClick={async () => {
-                    await signOut({ redirect: false });
-                    router.push('/');
-                    router.refresh();
-                  }}>
-                    <FaUser /> Log Out
-                  </button>
-            </div>
-          ) : <div className="hidden md:block">
-            <Link
-              href="/signin"
-              className="bg-white text-textColor hover:bg-sixthColor px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          <span className="text-2xl font-bold text-gray-900 tracking-tight">
+            Table For Four
+          </span>
+        </motion.div></Link>
+        
+        <div className="hidden md:flex items-center space-x-1">
+          <motion.a 
+            href="/features" 
+            whileHover={{ y: -1 }}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+          >
+            Features
+          </motion.a>
+          <motion.a 
+            href="/pricing" 
+            whileHover={{ y: -1 }}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+          >
+            Pricing
+          </motion.a>
+          <motion.a 
+            href="/contact" 
+            whileHover={{ y: -1 }}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+          >
+            Contact
+          </motion.a>
+          <div className="w-px h-6 bg-gray-200 mx-2"></div>
+          <Link href="/get-started">
+            <motion.button 
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-black transition-all duration-200 font-medium shadow-sm hover:shadow-md"
             >
-              <FaUser />
-              Login
-            </Link>
-          </div>}
-
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(true)}
-              className="text-white hover:text-orange-200 p-2 rounded-md transition-colors"
+              Get Started
+            </motion.button>
+          </Link>
+        </div>
+        
+        {/* Mobile menu button */}
+        <div className="md:hidden">
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleMobileMenu}
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            <motion.svg 
+              className="w-6 h-6" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+              animate={isMobileMenuOpen ? { rotate: 90 } : { rotate: 0 }}
+              transition={{ duration: 0.2 }}
             >
-              <GiHamburgerMenu className="h-6 w-6" />
-            </button>
-          </div>
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </motion.svg>
+          </motion.button>
         </div>
       </div>
-
-      {/* Mobile Drawer */}
+      
+      {/* Mobile menu */}
       <AnimatePresence>
-        {isOpen && (
-          <div
-            className="fixed inset-0 z-50 bg-black/50 md:hidden"
-            onClick={() => setIsOpen(false)}
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-xl"
           >
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              variants={drawerVariants}
-              transition={{ type: "tween", duration: 0.3 }}
-              className="fixed top-0 right-0 w-80 h-full bg-white shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Mobile Header */}
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-2">
-                      <span className="text-orange-500 font-bold">L</span>
-                    </div>
-                    <span className="text-white font-bold text-lg">YourLogo</span>
-                  </div>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="text-white hover:text-orange-200 p-1 rounded"
+            <div className="px-4 py-4 space-y-2">
+              <motion.a
+                href="/features"
+                onClick={() => setIsMobileMenuOpen(false)}
+                whileHover={{ x: 4 }}
+                className="block px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+              >
+                Features
+              </motion.a>
+              <motion.a
+                href="/pricing"
+                onClick={() => setIsMobileMenuOpen(false)}
+                whileHover={{ x: 4 }}
+                className="block px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+              >
+                Pricing
+              </motion.a>
+              <motion.a
+                href="/contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                whileHover={{ x: 4 }}
+                className="block px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
+              >
+                Contact
+              </motion.a>
+              <div className="pt-2">
+                <Link href="/get-started" className="block">
+                  <motion.button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-black transition-all duration-200 font-medium shadow-sm"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                    Get Started
+                  </motion.button>
+                </Link>
               </div>
-
-              {/* Mobile Navigation */}
-              <div className="flex flex-col p-6 space-y-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`flex items-center gap-3 text-gray-700 hover:text-textColor py-3 px-4 rounded-lg transition-all duration-300 hover:bg-sixthColor ${
-                      pathname === link.href ? "bg-orange-100 text-textColor" : ""
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <span className="text-xl">{link.icon}</span>
-                    <span className="font-medium">{link.label}</span>
-                  </Link>
-                ))}
-                
-                {/* Login Button */}
-                {session.status === "authenticated" ? (                   
-                    <div className="pt-4 border-t border-gray-200">
-                  {/* <Link
-                    href="/dashboard/admin/add-product"
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 hover:from-orange-600 hover:to-orange-700 flex items-center justify-center gap-2 shadow-md"
-                    onClick={() => setIsOpen(false)}
-                  >
-                   
-                    Dashboard
-                  </Link> */}
-                  <button onClick={async () => {
-                    await signOut({ redirect: false });
-                    router.push('/');
-                    router.refresh();
-                  }}>
-                    <FaUser /> Log Out
-                  </button>
-                </div>
-                ) : (
-                    <div className="pt-4 border-t border-gray-200">
-                  <Link
-                    href="/signin"
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 hover:from-orange-600 hover:to-orange-700 flex items-center justify-center gap-2 shadow-md"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <FaUser />
-                    Login
-                  </Link>
-                </div>
-                )}
-     
-              </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
-  }
-};
-
-export default Navbar;
+}

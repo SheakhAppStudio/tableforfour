@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbConnect, collections } from "@/lib/dbConnect";
-import bcrypt from "bcryptjs";
+
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const usersCollection = dbConnect(collections.users);
+    const usersCollection = await dbConnect(collections.users);
 
     // Check if user already exists
     const existingUser = await usersCollection.findOne({ email: data.email , mobile: data.mobile });

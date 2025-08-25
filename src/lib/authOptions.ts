@@ -42,7 +42,7 @@ export const authOptions: AuthOptions = {
         const { email, password } = credentials;
 
         // Connect to DB and find user by email only
-        const userCollection = dbConnect(collections.users);
+        const userCollection =await dbConnect(collections.users);
         const user = await userCollection.findOne<{
           _id: string;
           name?: string;

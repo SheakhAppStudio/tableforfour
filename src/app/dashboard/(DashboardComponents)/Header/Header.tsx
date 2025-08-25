@@ -34,7 +34,7 @@ export function Header() {
         </button>
       </div>
       
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 hidden">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100 text-white hover:text-black focus:outline-none">
             <div className="relative h-10 w-10">

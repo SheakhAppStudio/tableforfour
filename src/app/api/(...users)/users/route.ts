@@ -2,14 +2,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import  { dbConnect, collections } from "@/lib/dbConnect";
 import { generateRandomNumber } from '@/components/sharedComponents/reuseableJs/reuseableJs';
-import { authorizationCheck } from '@/lib/authorization';
+import { checkAuthorization } from '@/lib/authorization';
 // POST method to create a user if email doesn't exist
+const usersCollection = await dbConnect(collections.users);
 export async function POST(req: Request) {
   const referer = req.headers.get('referer') || '';
   const refererPath = new URL(referer).pathname;
   
   // Pass referer path to authorization check
-  const authResult = await authorizationCheck(refererPath);
+  const authResult = await checkAuthorization(refererPath);
   
   if (!authResult.success) {
     return NextResponse.json(
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     const user = await req.json();
 
     // Check if user with the given email already exists
-    const findUser = await dbConnect(collections.users).findOne({ email: user?.email });
+    const findUser = await usersCollection.findOne({ email: user?.email });
     
     if (findUser) {
       return NextResponse.json(
@@ -34,16 +35,15 @@ export async function POST(req: Request) {
       const hashedPassword =  generateRandomNumber(6);
       
       // Save to database
-      const admin = await dbConnect(collections.users).insertOne( {
+      const admin = await usersCollection.insertOne( {
          ...user,
          password: hashedPassword,
-         role: authResult?.user?.instituteId === "titb" ? 'titb admin':'ins admin',
+         role: 'admin',
          isActive :"active",
-         instituteId : authResult?.user?.instituteId,
          oldPasswords: []
       });
     // Insert the new user into the collection
-    // const result = await dbConnect(collections.users).insertOne(user);
+    // const result = await usersCollection.insertOne(user);
 
     // Return the result
     return NextResponse.json(admin, { status: 201 });
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Fetch all users from the database
-    const users = await dbConnect(collections.users).find().toArray();
+    const users = await usersCollection.find().toArray();
 
     if (users && users.length > 0) {
       return NextResponse.json(users, { status: 200 });

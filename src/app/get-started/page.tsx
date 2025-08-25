@@ -1,57 +1,76 @@
 'use client';
-
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { InputField, SingleSelect } from '@/components/sharedComponents/reuseableInputs/reuseableInputs';
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
+import { TypingAnimation } from '@/components/magicui/typing-animation';
+import { WordRotate } from '@/components/magicui/word-rotate';
 import { useState } from 'react';
-import Link from 'next/link';
+
+interface FormData {
+  ownerName: string;
+  email: string;
+  phone: string;
+  restaurantName: string;
+  currentBookingMethod: string;
+}
 
 export default function GetStarted() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    restaurantName: '',
-    currentBookingMethod: ''
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      ownerName: '',
+      email: '',
+      phone: '',
+      restaurantName: '',
+      currentBookingMethod: ''
+    }
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const bookingMethods = [
+    { label: 'Phone calls only', value: 'phone-calls' },
+    { label: 'Walk-ins only', value: 'walk-ins' },
+    { label: 'Third-party booking platform', value: 'third-party-platform' },
+    { label: 'Manual booking system (paper/spreadsheet)', value: 'manual-system' },
+    { label: "We don't currently take reservations", value: 'no-reservations' },
+    { label: 'Other method', value: 'other' }
+  ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      const res = await axios.post('/api/restaurants', data);
+      
+      if (res.status === 201) {
+        toast.success('Your information has been submitted successfully!');
+        reset();
+      } else {
+        throw new Error(res.data?.message || 'Submission failed');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error(
+        (typeof error === 'object' && error !== null && 'response' in error && 
+          typeof (error as any).response?.data?.message === 'string'
+          ? (error as any).response.data.message
+          : 'There was an error submitting your information. Please try again.'
+        )
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="px-4 sm:px-6 py-5 border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <span className="text-2xl font-bold text-gray-900 tracking-tight">
-              Table For Four
-            </span>
-          </Link>
-          <Link 
-            href="/" 
-            className="text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            ← Back to Home
-          </Link>
-        </div>
-      </nav>
+      <Toaster position="top-center" />
 
-      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -73,106 +92,104 @@ export default function GetStarted() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="bg-white rounded-2xl shadow-lg p-8"
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name" className="block text-base font-semibold text-gray-900 mb-3">
-                Your Name or Manager Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 text-gray-900 font-medium"
-                placeholder="Enter your full name"
-              />
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <InputField
+              name="ownerName"
+              control={control}
+              label="Your Name or Manager Name"
+              placeholder="Enter your full name"
+              rules={{ required: 'Name is required' }}
 
-            {/* Contact Information */}
-            <div>
-              <label htmlFor="email" className="block text-base font-semibold text-gray-900 mb-3">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 text-gray-900 font-medium"
-                placeholder="Enter your email address"
-              />
-            </div>
+            />
 
-            <div>
-              <label htmlFor="phone" className="block text-base font-semibold text-gray-900 mb-3">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                required
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 text-gray-900 font-medium"
-                placeholder="Enter your phone number"
-              />
-            </div>
+            <InputField
+              name="email"
+              control={control}
+              label="Email Address"
+              placeholder="Enter your email address"
+              type="email"
+              rules={{ 
+                required: 'Email is required',
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address"
+                }
+              }}
 
-            {/* Restaurant Information */}
-            <div>
-              <label htmlFor="restaurantName" className="block text-base font-semibold text-gray-900 mb-3">
-                Restaurant Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="restaurantName"
-                name="restaurantName"
-                required
-                value={formData.restaurantName}
-                onChange={handleInputChange}
-                className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 text-gray-900 font-medium"
-                placeholder="Enter your restaurant name"
-              />
-            </div>
+            />
 
+            <InputField
+              name="phone"
+              control={control}
+              label="Phone Number"
+              placeholder="Enter your phone number"
+              type="tel"
+              rules={{ 
+                required: 'Phone number is required',
+                minLength: {
+                  value: 10,
+                  message: 'Phone number must be at least 10 digits'
+                }
+              }}
 
+            />
 
-            <div>
-              <label htmlFor="currentBookingMethod" className="block text-base font-semibold text-gray-900 mb-3">
-                How do you currently manage table reservations?
-              </label>
-              <select
-                id="currentBookingMethod"
-                name="currentBookingMethod"
-                value={formData.currentBookingMethod}
-                onChange={handleInputChange}
-                className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 bg-white text-gray-900 font-medium"
-              >
-                <option value="">Please select your current method...</option>
-                <option value="phone-calls">Phone calls only</option>
-                <option value="walk-ins">Walk-ins only</option>
-                <option value="third-party-platform">Third-party booking platform</option>
-                <option value="manual-system">Manual booking system (paper/spreadsheet)</option>
-                <option value="no-reservations">We don't currently take reservations</option>
-                <option value="other">Other method</option>
-              </select>
-            </div>
+            <InputField
+              name="restaurantName"
+              control={control}
+              label="Restaurant Name"
+              placeholder="Enter your restaurant name"
+              rules={{ required: 'Restaurant name is required' }}
 
-            {/* Submit Button */}
+            />
+
+            <SingleSelect
+              name="currentBookingMethod"
+              control={control}
+              label="How do you currently manage table reservations?"
+              options={bookingMethods}
+              placeholder="Please select your current method..."
+              rules={{ required: 'Please select your current method' }}
+
+            />
+
             <div className="pt-6">
               <motion.button
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg text-lg font-medium hover:bg-black transition-all duration-200 shadow-lg hover:shadow-xl"
+                disabled={isSubmitting}
+                className={`w-full ${
+                  isSubmitting ? 'bg-gray-600' : 'bg-gray-900'
+                } text-white py-4 px-6 rounded-lg text-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex justify-center items-center`}
               >
-                Submit Information
+                {isSubmitting ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  'Submit Information'
+                )}
               </motion.button>
               <p className="text-sm text-gray-500 text-center mt-4">
                 We'll contact you within 24 hours to get you set up
@@ -181,19 +198,24 @@ export default function GetStarted() {
           </form>
         </motion.div>
 
-        {/* Trust Indicators */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-12"
-        >
-          <p className="text-sm text-gray-500 mb-6">Trusted by over 2,500 restaurants worldwide</p>
-          <div className="flex justify-center items-center space-x-8 opacity-40">
-            <div className="text-gray-400 font-semibold">Restaurant A</div>
-            <div className="text-gray-400 font-semibold">Bistro B</div>
-            <div className="text-gray-400 font-semibold">Cafe C</div>
-            <div className="text-gray-400 font-semibold">Diner D</div>
+          transition={{ duration: 0.8, delay: 1.0 }}
+          className="mt-12 pt-8 border-t border-gray-200"
+        > 
+          <TypingAnimation 
+            startOnView={true} 
+            duration={100} 
+            className="text-3xl sm:text-4xl text-black mb-4"
+          >
+            Made for restaurants like yours.
+          </TypingAnimation>
+          <div className="flex justify-center items-center space-x-4 opacity-60 font-semibold">
+            <WordRotate
+              className="text-4xl font-bold text-black dark:text-white"
+              words={["Restaurant", "Bistro", "Cafe", "Diner"]}
+            />
           </div>
         </motion.div>
       </div>

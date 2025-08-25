@@ -4,11 +4,13 @@ import Image from "next/image";
 import { Controller, Control, RegisterOptions, useWatch, FieldValues, PathValue, Path } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCloudinaryUpload } from "@/components/sharedComponents/uploadFiles/uploadCloudinary";
+
 import { Calendar, Upload, X } from 'lucide-react';
+import { uploadToCloudinary } from "../uploadFiles/uploadCloudinary";
 
 // Common styles
-const commonInputClasses = "w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200";
+const commonInputClasses = "w-full px-4 py-7 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 text-gray-900 font-medium";
+const commonSelectInputClasses = "w-full px-4 py-4 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 text-gray-900 font-medium";
 const errorClasses = "border-red-500 focus:ring-red-200 focus:border-red-500";
 const labelClasses = "block mb-2 text-sm font-medium text-gray-700";
 const helperTextClasses = "mt-1.5 text-xs text-gray-500";
@@ -123,8 +125,9 @@ interface SingleSelectProps<T extends FieldValues> extends BaseFieldProps<T> {
   options: SelectOption[];
   placeholder?: string;
   defaultValue?: string;
-  inputClassName?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  required?: boolean;
 }
 
 const SingleSelect = <T extends FieldValues>({
@@ -135,82 +138,70 @@ const SingleSelect = <T extends FieldValues>({
   rules = {},
   placeholder = "Select an option",
   className = "",
-  inputClassName = "",
   onChange,
   disabled = false,
   defaultValue,
   helperText,
+  required = false,
 }: SingleSelectProps<T>) => {
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const prevFieldValue = useRef<string | undefined>(undefined);
-
   return (
     <div className={`w-full ${className}`}>
-      {label && <Label className={labelClasses}>{label}</Label>}
+      {label && (
+        <label htmlFor={name} className={labelClasses}>
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      
       <Controller
         name={name as Path<T>}
         control={control}
-        defaultValue={defaultValue as PathValue<T, Path<T>> || (options[0]?.value as PathValue<T, Path<T>>)}
-        rules={rules as Omit<RegisterOptions<T>, "setValueAs" | "disabled" | "valueAsNumber" | "valueAsDate">}
-        render={({ field, fieldState: { error } }) => {
-          if (!isTyping && prevFieldValue.current !== field.value) {
-            const currentOption = options.find(opt => opt.value === field.value);
-            setInputValue(currentOption?.label || "");
-            prevFieldValue.current = field.value;
-          }
-
-          return (
-            <>
-              <div className="relative">
-                <input
-                  list={`${name}-options`}
-                  disabled={disabled}
-                  value={inputValue}
-                  onChange={(e) => {
-                    setIsTyping(true);
-                    setInputValue(e.target.value);
-                    onChange?.(e);
-                  }}
-                  onBlur={(e) => {
-                    setIsTyping(false);
-                    const selectedOption = options.find(
-                      opt => opt.label === e.target.value || opt.value === e.target.value
-                    );
-                    if (selectedOption) {
-                      field.onChange(selectedOption.value);
-                      setInputValue(selectedOption.label);
-                    } else {
-                      const currentValidOption = options.find(
-                        opt => opt.value === field.value
-                      );
-                      setInputValue(currentValidOption?.label || "");
-                    }
-                    field.onBlur();
-                  }}
-                  placeholder={placeholder}
-                  className={`${commonInputClasses} ${inputClassName} ${error ? errorClasses : ''} pr-10`}
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
-              </div>
-              
-              <datalist id={`${name}-options`}>
+        defaultValue={defaultValue as PathValue<T, Path<T>>}
+       rules={rules as Omit<RegisterOptions<T>, "setValueAs" | "disabled" | "valueAsNumber" | "valueAsDate">}
+        render={({ field, fieldState: { error } }) => (
+          <>
+            <div className="relative">
+              <select
+                {...field}
+                id={name}
+                disabled={disabled}
+                onChange={(e) => {
+                  field.onChange(e);
+                  onChange?.(e);
+                }}
+                className={`${commonSelectInputClasses} appearance-none pr-10 ${error ? errorClasses : ''}`}
+              >
+                {placeholder && (
+                  <option value="" disabled hidden>
+                    {placeholder}
+                  </option>
+                )}
                 {options.map((option) => (
-                  <option key={option.value} value={option.label}>
+                  <option 
+                    key={option.value} 
+                    value={option.value}
+                    className="py-2"
+                  >
                     {option.label}
                   </option>
                 ))}
-              </datalist>
+              </select>
               
-              {helperText && !error && <p className={helperTextClasses}>{helperText}</p>}
-              {error && <p className={errorTextClasses}>{error.message}</p>}
-            </>
-          );
-        }}
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  className="w-5 h-5 text-gray-400"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </div>
+
+            {helperText && !error && <p className={helperTextClasses}>{helperText}</p>}
+            {error && <p className={errorTextClasses}>{error.message}</p>}
+          </>
+        )}
       />
     </div>
   );
@@ -297,7 +288,7 @@ const FileUploadField = <T extends FieldValues>({
   maxFiles,
   helperText,
 }: FileUploadFieldProps<T>) => {
-  const { uploadToCloudinary } = useCloudinaryUpload();
+
   const [uploading, setUploading] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement | null>(null);

@@ -22,7 +22,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Sidebar Drawer */}
       <aside className={cn(
-        "fixed z-40 h-screen w-64 border-r bg-firstColor text-white transition-transform duration-300",
+        "fixed z-40 h-screen w-64 border-r bg-black text-white transition-transform duration-300",
         "md:hidden",
         isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
@@ -30,19 +30,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Desktop Sidebar (fixed) */}
-      <aside className="hidden h-screen w-64 border-r bg-firstColor text-white md:fixed md:block">
+      <aside className="hidden h-screen w-64 border-r bg-black text-white md:fixed md:block">
         <Sidebar />
       </aside>
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden md:pl-64 bg-fifthColor">
         {/* Fixed Header - positioned at top of content area */}
-        <header className="sticky top-0 z-30 h-16 border-b bg-firstColor ">
+        <header className="sticky top-0 z-30 h-16 border-b bg-black ">
           <Header />
         </header>
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-fifthColor ">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-white ">
           {children}
         </main>
       </div>

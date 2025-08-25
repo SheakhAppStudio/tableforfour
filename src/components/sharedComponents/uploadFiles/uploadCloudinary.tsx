@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const useCloudinaryUpload = () => {
+
   interface UploadToCloudinaryResponse {
     secure_url: string;
   }
@@ -30,7 +30,5 @@ const useCloudinaryUpload = () => {
     }
   };
 
-  return { uploadToCloudinary };
-};
+export { uploadToCloudinary };
 
-export { useCloudinaryUpload };
